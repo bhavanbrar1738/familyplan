@@ -12,6 +12,7 @@
 <title>familyplan</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
@@ -25,34 +26,26 @@
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;overflow:hidden}
 .app{display:flex;flex-direction:column;height:100vh;height:100dvh}
 
-/* TOP BAR */
-.topbar{
-  padding:calc(var(--safe-top) + 10px) 16px 10px;
-  background:var(--surface);
-  border-bottom:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;
-  flex-shrink:0;
-}
+.topbar{padding:calc(var(--safe-top) + 10px) 16px 10px;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
 .logo{font-size:17px;font-weight:600;letter-spacing:.3px}
 .logo span{color:var(--accent)}
+.sync-status{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted)}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--muted);flex-shrink:0;transition:background .3s}
+.sync-dot.live{background:var(--success)}
+.sync-dot.error{background:var(--danger)}
+.sync-dot.syncing{background:var(--warn);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 .view-toggle{display:flex;gap:3px;background:var(--surface2);border-radius:8px;padding:3px}
 .vtb{background:none;border:none;color:var(--muted);font-size:12px;padding:5px 12px;border-radius:6px;cursor:pointer;font-family:'DM Sans',sans-serif;font-weight:500;transition:all .15s}
 .vtb.active{background:var(--accent);color:#fff}
 
-/* NAV */
-.navrow{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);
-  flex-shrink:0;
-}
+.navrow{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:var(--surface);border-bottom:1px solid var(--border);flex-shrink:0}
 .nav-btn{background:none;border:1px solid var(--border);border-radius:7px;color:var(--muted);width:32px;height:32px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:18px;font-family:'DM Sans',sans-serif;flex-shrink:0}
 .nav-label{font-size:13px;font-weight:500;color:var(--text);text-align:center;flex:1;padding:0 8px}
-.btn-add{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:5px;font-family:'DM Sans',sans-serif;white-space:nowrap}
+.btn-add{background:var(--accent);color:#fff;border:none;border-radius:8px;padding:6px 14px;font-size:13px;font-weight:500;cursor:pointer;font-family:'DM Sans',sans-serif;white-space:nowrap}
 
-/* SCROLL AREA */
 .scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 
-/* WEEK VIEW */
 .week-header{display:grid;grid-template-columns:44px repeat(7,1fr);background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
 .day-hdr{text-align:center;padding:8px 2px 6px;font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
 .day-num-w{font-size:13px;color:var(--text);font-weight:500;width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin:2px auto 0;border-radius:50%}
@@ -67,7 +60,6 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .ev-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;font-weight:500}
 .ev-sub{font-size:9px;opacity:.75;margin-top:1px}
 
-/* MONTH VIEW */
 .month-grid{padding:10px 12px}
 .month-days-hdr{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
 .month-dh{text-align:center;font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.4px;padding:4px 0}
@@ -82,8 +74,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .md-dot.mom{background:var(--mom)}
 .md-more{font-size:8px;color:var(--muted);text-align:center}
 
-/* FOLLOW-UPS */
-.fu-section{padding:12px 14px;border-top:1px solid var(--border)}
+.fu-section{padding:12px 14px}
 .section-title{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
 .fu-card{background:var(--surface2);border-radius:10px;padding:11px 13px;border:1px solid var(--border);margin-bottom:8px;cursor:pointer}
 .fu-top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:3px}
@@ -95,21 +86,15 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .fu-meta{font-size:11px;color:var(--muted)}
 .fu-note{font-size:11px;color:var(--muted);font-style:italic;margin-top:4px;border-top:1px solid var(--border);padding-top:4px}
 
-/* LEGEND */
-.legend{display:flex;gap:14px;padding:10px 14px 2px;flex-shrink:0}
+.legend{display:flex;gap:14px;padding:10px 14px 2px}
 .leg-item{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 .leg-dot{width:9px;height:9px;border-radius:50%}
 
-/* BOTTOM NAV */
-.bottom-nav{
-  display:flex;border-top:1px solid var(--border);background:var(--surface);
-  padding-bottom:var(--safe-bottom);flex-shrink:0;
-}
+.bottom-nav{display:flex;border-top:1px solid var(--border);background:var(--surface);padding-bottom:var(--safe-bottom);flex-shrink:0}
 .bnav-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 0;background:none;border:none;color:var(--muted);font-size:10px;font-family:'DM Sans',sans-serif;cursor:pointer;font-weight:500}
 .bnav-btn.active{color:var(--accent)}
 .bnav-icon{font-size:20px}
 
-/* MODAL */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:200;display:flex;align-items:flex-end}
 .modal{background:var(--surface);border-radius:20px 20px 0 0;padding:20px 18px calc(var(--safe-bottom) + 20px);width:100%;max-height:90vh;overflow-y:auto}
 .modal-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:0 auto 16px}
@@ -126,13 +111,14 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 .btn-cancel{background:none;border:1px solid var(--border);color:var(--muted);border-radius:10px;padding:12px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%}
 .btn-delete{background:none;border:1px solid var(--danger);color:var(--danger);border-radius:10px;padding:12px;font-size:14px;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%}
 
-/* EXPORT BTN */
 .export-btn{display:flex;align-items:center;justify-content:center;gap:7px;background:var(--surface2);border:1px solid var(--border);color:var(--text);border-radius:10px;padding:11px;font-size:13px;font-weight:500;font-family:'DM Sans',sans-serif;cursor:pointer;width:100%;margin-bottom:12px}
 
-/* TOAST */
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 20px;gap:12px;color:var(--muted);font-size:13px}
+.spinner{width:28px;height:28px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
 .toast{position:fixed;bottom:calc(var(--safe-bottom) + 72px);left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px 18px;font-size:13px;color:var(--text);z-index:999;transition:opacity .3s;white-space:nowrap}
 
-/* INSTALL BANNER */
 .install-banner{background:var(--surface2);border-bottom:1px solid var(--border);padding:10px 14px;display:flex;align-items:center;gap:10px;flex-shrink:0}
 .install-banner p{font-size:12px;color:var(--muted);flex:1;line-height:1.4}
 .install-banner p strong{color:var(--text)}
@@ -141,9 +127,12 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 </head>
 <body>
 <div class="app" id="app">
-
   <div class="topbar">
     <div class="logo"><span>family</span>plan</div>
+    <div class="sync-status">
+      <div class="sync-dot" id="sync-dot"></div>
+      <span id="sync-label">connecting</span>
+    </div>
     <div class="view-toggle">
       <button class="vtb active" id="btn-week" onclick="setView('week')">Week</button>
       <button class="vtb" id="btn-month" onclick="setView('month')">Month</button>
@@ -151,7 +140,7 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
   </div>
 
   <div id="install-banner" class="install-banner" style="display:none">
-    <p><strong>Add to home screen:</strong> tap Share then "Add to Home Screen" in Safari to install.</p>
+    <p><strong>Add to home screen:</strong> tap Share then "Add to Home Screen" in Safari.</p>
     <button class="install-x" onclick="document.getElementById('install-banner').style.display='none'">&#x2715;</button>
   </div>
 
@@ -163,7 +152,9 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
     <button class="btn-add" onclick="openAdd()">+ Add</button>
   </div>
 
-  <div class="scroll-area" id="scroll-area"></div>
+  <div class="scroll-area" id="scroll-area">
+    <div class="loading"><div class="spinner"></div>Loading events...</div>
+  </div>
 
   <div class="bottom-nav">
     <button class="bnav-btn active" id="bnav-cal" onclick="switchTab('cal')">
@@ -181,27 +172,45 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 <div id="toast-el" class="toast" style="opacity:0;pointer-events:none"></div>
 
 <script>
+const SUPABASE_URL = 'https://udcmvibkagpoepzxgpia.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkY212aWJrYWdwb2VwenhncGlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA4Nzk0ODUsImV4cCI6MjA5NjQ1NTQ4NX0.4AqqTj11ifOaKLN151riDpFn74G7GQ3BRTErhQQdibU';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 const HOURS=['8 AM','9 AM','10 AM','11 AM','12 PM','1 PM','2 PM','3 PM','4 PM','5 PM','6 PM','7 PM','8 PM'];
 const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
 
-let view='week',tab='cal',cursorDate=new Date(),editId=null;
-let events=JSON.parse(localStorage.getItem('fp_events')||'[]');
+let view='week', tab='cal', cursorDate=new Date(), editId=null;
+let events=[];
+let loaded=false;
 
-if(!events.length){
-  const t=new Date();
-  const d=(off,h,m)=>{const x=new Date(t);x.setDate(x.getDate()+off);x.setHours(h,m,0,0);return x.toISOString()};
-  events=[
-    {id:'e1',title:'John & Sarah — WFG intro',who:'bhavan',start:d(0,10,0),end:d(0,11,0),status:'pending',note:'Follow up on life insurance interest',reminder:'30'},
-    {id:'e2',title:'Follow-up call — Mike',who:'mom',start:d(1,14,0),end:d(1,15,0),status:'overdue',note:'Missed last week — reschedule',reminder:'60'},
-    {id:'e3',title:'Team training session',who:'bhavan',start:d(2,9,0),end:d(2,11,0),status:'done',note:'',reminder:'15'},
-    {id:'e4',title:'Client check-in — Patel family',who:'mom',start:d(3,13,0),end:d(3,14,0),status:'pending',note:'Reviewing policy options',reminder:'30'},
-  ];
-  save();
+function setSyncStatus(state){
+  const dot=document.getElementById('sync-dot');
+  const label=document.getElementById('sync-label');
+  dot.className='sync-dot'+( state==='live'?' live':state==='error'?' error':state==='syncing'?' syncing':'');
+  label.textContent=state==='live'?'live':state==='error'?'offline':state==='syncing'?'syncing...':'connecting';
 }
 
-function save(){localStorage.setItem('fp_events',JSON.stringify(events))}
-function uid(){return 'e'+Date.now()}
+async function loadEvents(){
+  setSyncStatus('syncing');
+  const {data,error}=await sb.from('events').select('*').order('start_time',{ascending:true});
+  if(error){setSyncStatus('error');toast('Could not load events');return}
+  events=data.map(dbToEv);
+  loaded=true;
+  setSyncStatus('live');
+  render();
+  scheduleAllReminders();
+}
+
+function dbToEv(r){
+  return {id:r.id,title:r.title,who:r.who,start:r.start_time,end:r.end_time,status:r.status,reminder:r.reminder,note:r.note||''};
+}
+function evToDb(e){
+  return {id:e.id,title:e.title,who:e.who,start_time:e.start,end_time:e.end,status:e.status,reminder:e.reminder,note:e.note};
+}
+
+function uid(){return 'e'+Date.now()+Math.random().toString(36).slice(2,6)}
 function getWeekStart(d){const x=new Date(d);x.setDate(x.getDate()-x.getDay());x.setHours(0,0,0,0);return x}
 function addDays(d,n){const x=new Date(d);x.setDate(x.getDate()+n);return x}
 function isToday(d){const t=new Date();return d.getDate()===t.getDate()&&d.getMonth()===t.getMonth()&&d.getFullYear()===t.getFullYear()}
@@ -227,6 +236,7 @@ function switchTab(t){
 }
 
 function render(){
+  if(!loaded)return;
   const area=document.getElementById('scroll-area');
   if(tab==='fu'){renderFollowUps(area);return}
   if(view==='week')renderWeek(area);
@@ -252,7 +262,7 @@ function renderWeek(area){
     days.forEach((d,di)=>{
       if(hi===0){
         const dayEvs=wevs.filter(e=>sameDay(new Date(e.start),d));
-        h+=`<div class="day-col" style="grid-row:1/${HOURS.length+1}" onclick="openAddOnDay('${d.toISOString()}',event)">`;
+        h+=`<div class="day-col" onclick="openAddOnDay('${d.toISOString()}',event)">`;
         HOURS.forEach(()=>{h+=`<div class="time-cell"></div>`});
         dayEvs.forEach(e=>{
           const s=new Date(e.start),en=new Date(e.end);
@@ -303,7 +313,6 @@ function renderFollowUps(area){
   document.getElementById('nav-label').textContent='Follow-ups';
   const pending=events.filter(e=>e.status!=='done').sort((a,b)=>new Date(a.start)-new Date(b.start));
   const done=events.filter(e=>e.status==='done').sort((a,b)=>new Date(b.start)-new Date(a.start));
-
   let h=`<div class="fu-section">`;
   h+=`<button class="export-btn" onclick="exportICS()">&#8599; Export all events to Apple Calendar (.ics)</button>`;
   h+=`<div class="section-title">Pending & overdue (${pending.length})</div>`;
@@ -339,8 +348,7 @@ function showModal(id,dayIso){
   const defE=e?fmtDT(e.end):fmtDT(new Date(def.getTime()+3600000));
 
   const ov=document.createElement('div');
-  ov.className='modal-overlay';
-  ov.id='modal-overlay';
+  ov.className='modal-overlay';ov.id='modal-overlay';
   ov.innerHTML=`
     <div class="modal">
       <div class="modal-handle"></div>
@@ -389,33 +397,35 @@ function showModal(id,dayIso){
 
 function closeModal(){const m=document.getElementById('modal-overlay');if(m)m.remove()}
 
-function saveEv(){
+async function saveEv(){
   const title=document.getElementById('m-title').value.trim();
   if(!title){toast('Please add a title');return}
-  const start=document.getElementById('m-start').value;
-  const end=document.getElementById('m-end').value;
-  const who=document.getElementById('m-who').value;
-  const status=document.getElementById('m-status').value;
-  const reminder=document.getElementById('m-reminder').value;
-  const note=document.getElementById('m-note').value.trim();
-  if(editId){
-    const idx=events.findIndex(e=>e.id===editId);
-    events[idx]={...events[idx],title,start:new Date(start).toISOString(),end:new Date(end).toISOString(),who,status,reminder,note};
-  } else {
-    const ev={id:uid(),title,start:new Date(start).toISOString(),end:new Date(end).toISOString(),who,status,reminder,note};
-    events.push(ev);
-  }
-  save();
-  scheduleReminder(events.find(e=>e.id===(editId||events[events.length-1].id)));
+  const ev={
+    id:editId||uid(),
+    title,
+    who:document.getElementById('m-who').value,
+    start:new Date(document.getElementById('m-start').value).toISOString(),
+    end:new Date(document.getElementById('m-end').value).toISOString(),
+    status:document.getElementById('m-status').value,
+    reminder:document.getElementById('m-reminder').value,
+    note:document.getElementById('m-note').value.trim()
+  };
+  setSyncStatus('syncing');
+  const {error}=await sb.from('events').upsert(evToDb(ev));
+  if(error){setSyncStatus('error');toast('Save failed — check connection');return}
+  setSyncStatus('live');
   closeModal();
-  render();
-  toast('Event saved');
+  toast(editId?'Event updated':'Event added');
 }
 
-function deleteEv(id){
+async function deleteEv(id){
   if(!confirm('Delete this event?'))return;
-  events=events.filter(e=>e.id!==id);
-  save();closeModal();render();toast('Event deleted');
+  setSyncStatus('syncing');
+  const {error}=await sb.from('events').delete().eq('id',id);
+  if(error){setSyncStatus('error');toast('Delete failed');return}
+  setSyncStatus('live');
+  closeModal();
+  toast('Event deleted');
 }
 
 function scheduleReminder(ev){
@@ -423,7 +433,7 @@ function scheduleReminder(ev){
   if(!('Notification' in window))return;
   const fireAt=new Date(ev.start).getTime()-parseInt(ev.reminder)*60000;
   const delay=fireAt-Date.now();
-  if(delay<0)return;
+  if(delay<0||delay>86400000*2)return;
   Notification.requestPermission().then(p=>{
     if(p==='granted'){
       setTimeout(()=>{
@@ -432,10 +442,11 @@ function scheduleReminder(ev){
     }
   });
 }
+function scheduleAllReminders(){events.forEach(scheduleReminder)}
 
 function exportICS(){
-  const icsDate=d=>{const x=new Date(d);return x.getUTCFullYear()+pad(x.getUTCMonth()+1)+pad(x.getUTCDate())+'T'+pad(x.getUTCHours())+pad(x.getUTCMinutes())+pad(x.getUTCSeconds())+'Z'};
   const pad=n=>String(n).padStart(2,'0');
+  const icsDate=d=>{const x=new Date(d);return x.getUTCFullYear()+pad(x.getUTCMonth()+1)+pad(x.getUTCDate())+'T'+pad(x.getUTCHours())+pad(x.getUTCMinutes())+pad(x.getUTCSeconds())+'Z'};
   const now=icsDate(new Date());
   let ics='BEGIN:VCALENDAR\r\nVERSION:2.0\r\nPRODID:-//familyplan//EN\r\nCALSCALE:GREGORIAN\r\nMETHOD:PUBLISH\r\n';
   events.forEach(ev=>{
@@ -447,9 +458,8 @@ function exportICS(){
     ics+=`SUMMARY:${ev.title} [${ev.who==='bhavan'?'Bhavan':'Mom'}]\r\n`;
     if(ev.note)ics+=`DESCRIPTION:${ev.note.replace(/\n/g,'\\n')}\r\n`;
     if(ev.reminder&&ev.reminder!=='0'){
-      ics+='BEGIN:VALARM\r\nACTION:DISPLAY\r\n';
-      ics+=`DESCRIPTION:Reminder\r\nTRIGGER:-PT${ev.reminder}M\r\n`;
-      ics+='END:VALARM\r\n';
+      ics+='BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:Reminder\r\n';
+      ics+=`TRIGGER:-PT${ev.reminder}M\r\nEND:VALARM\r\n`;
     }
     ics+='END:VEVENT\r\n';
   });
@@ -459,7 +469,7 @@ function exportICS(){
   const a=document.createElement('a');
   a.href=url;a.download='familyplan.ics';a.click();
   URL.revokeObjectURL(url);
-  toast('Calendar exported — open to import into Apple Calendar');
+  toast('Exported — open file to import into Apple Calendar');
 }
 
 function toast(msg){
@@ -471,22 +481,39 @@ function toast(msg){
 function checkInstallPrompt(){
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent);
   const isStandalone=window.navigator.standalone===true;
-  if(isIOS&&!isStandalone){
-    document.getElementById('install-banner').style.display='flex';
-  }
+  if(isIOS&&!isStandalone)document.getElementById('install-banner').style.display='flex';
 }
 
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 
-if(Notification.permission==='default'){
+if('Notification' in window && Notification.permission==='default'){
   Notification.requestPermission();
 }
 
-events.forEach(scheduleReminder);
+sb.channel('events-changes')
+  .on('postgres_changes',{event:'*',schema:'public',table:'events'},payload=>{
+    if(payload.eventType==='INSERT'){
+      events.push(dbToEv(payload.new));
+      scheduleReminder(dbToEv(payload.new));
+    } else if(payload.eventType==='UPDATE'){
+      const idx=events.findIndex(e=>e.id===payload.new.id);
+      if(idx>-1)events[idx]=dbToEv(payload.new);
+    } else if(payload.eventType==='DELETE'){
+      events=events.filter(e=>e.id!==payload.old.id);
+    }
+    events.sort((a,b)=>new Date(a.start)-new Date(b.start));
+    render();
+    setSyncStatus('live');
+  })
+  .subscribe(status=>{
+    if(status==='SUBSCRIBED')setSyncStatus('live');
+    else if(status==='CLOSED'||status==='CHANNEL_ERROR')setSyncStatus('error');
+  });
+
 checkInstallPrompt();
-render();
+loadEvents();
 </script>
 </body>
 </html>
