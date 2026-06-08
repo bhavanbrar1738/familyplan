@@ -25,7 +25,7 @@ familyplan-sync/
 3. Drag and drop all 6 files from this folder onto the repo page
 4. Go to **Settings → Pages**
 5. Under Source: select **Deploy from a branch** → pick `main` → folder `/root` → Save
-6. Your app is live at: `https://YOUR-USERNAME.github.io/familyplan`
+6. Your app is live at: `https://bhavanbrar1738.github.io/familyplan`
 
 Share that link with Mom — you're both using the same app and same database.
 
