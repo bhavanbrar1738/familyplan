@@ -46,19 +46,21 @@ html,body{height:100%;background:var(--bg);color:var(--text);font-family:'DM San
 
 .scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch}
 
-.week-header{display:grid;grid-template-columns:44px repeat(7,1fr);background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
+.week-header{display:grid;grid-template-columns:52px repeat(7,1fr);background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:10}
 .day-hdr{text-align:center;padding:8px 2px 6px;font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.5px}
 .day-num-w{font-size:13px;color:var(--text);font-weight:500;width:24px;height:24px;display:flex;align-items:center;justify-content:center;margin:2px auto 0;border-radius:50%}
 .day-num-w.today{background:var(--accent);color:#fff}
-.week-body{display:grid;grid-template-columns:44px repeat(7,1fr)}
-.time-label{height:52px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 6px 0 0;font-size:10px;color:var(--muted)}
-.day-col{border-left:1px solid var(--border);position:relative}
-.time-cell{height:52px;border-bottom:1px solid rgba(42,47,66,.5)}
+.week-body{display:block;position:relative}
+.week-row{display:grid;grid-template-columns:52px repeat(7,1fr);border-bottom:1px solid rgba(42,47,66,.4)}
+.time-label{height:56px;display:flex;align-items:flex-start;justify-content:flex-end;padding:4px 8px 0 0;font-size:10px;color:var(--muted);flex-shrink:0}
+.day-col{border-left:1px solid var(--border);height:56px;position:relative;cursor:pointer}
+.day-col:hover{background:rgba(79,124,255,.04)}
 .event-block{position:absolute;left:2px;right:2px;border-radius:6px;padding:3px 5px;font-size:10px;font-weight:500;cursor:pointer;overflow:hidden;z-index:2}
-.event-block.bhavan{background:rgba(79,124,255,.25);border-left:3px solid var(--accent);color:#a5bbff}
-.event-block.mom{background:rgba(168,85,247,.25);border-left:3px solid var(--mom);color:#d8a8ff}
+.event-block.bhavan{background:rgba(79,124,255,.28);border-left:3px solid var(--accent);color:#a5bbff}
+.event-block.mom{background:rgba(168,85,247,.28);border-left:3px solid var(--mom);color:#d8a8ff}
 .ev-title{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:10px;font-weight:500}
 .ev-sub{font-size:9px;opacity:.75;margin-top:1px}
+.day-events-layer{position:absolute;top:0;left:52px;right:0;display:grid;grid-template-columns:repeat(7,1fr);pointer-events:none;z-index:3}
 
 .month-grid{padding:10px 12px}
 .month-days-hdr{display:grid;grid-template-columns:repeat(7,1fr);margin-bottom:4px}
@@ -250,32 +252,53 @@ function renderWeek(area){
     MONTHS[ws.getMonth()].slice(0,3)+' '+ws.getDate()+' – '+(ws.getMonth()!==we.getMonth()?MONTHS[we.getMonth()].slice(0,3)+' ':'')+we.getDate();
   const days=Array.from({length:7},(_,i)=>addDays(ws,i));
   const wevs=events.filter(e=>days.some(day=>sameDay(new Date(e.start),day)));
+  const ROW_H=56;
 
-  let h=`<div class="week-header"><div></div>`;
+  // Header row
+  let h=`<div class="week-header"><div style="width:52px"></div>`;
   days.forEach(d=>{
     const tod=isToday(d);
-    h+=`<div class="day-hdr"><div style="font-size:10px;color:var(--muted)">${DAYS[d.getDay()]}</div><div class="day-num-w${tod?' today':''}">${d.getDate()}</div></div>`;
-  });
-  h+=`</div><div class="week-body">`;
-  HOURS.forEach((_,hi)=>{
-    h+=`<div class="time-label">${HOURS[hi]}</div>`;
-    days.forEach((d,di)=>{
-      if(hi===0){
-        const dayEvs=wevs.filter(e=>sameDay(new Date(e.start),d));
-        h+=`<div class="day-col" onclick="openAddOnDay('${d.toISOString()}',event)">`;
-        HOURS.forEach(()=>{h+=`<div class="time-cell"></div>`});
-        dayEvs.forEach(e=>{
-          const s=new Date(e.start),en=new Date(e.end);
-          const sh=s.getHours()+s.getMinutes()/60;
-          const eh=en.getHours()+en.getMinutes()/60;
-          const top=(sh-8)*52,ht=Math.max((eh-sh)*52,26);
-          h+=`<div class="event-block ${e.who}" style="top:${top}px;height:${ht}px" onclick="openEdit('${e.id}',event)"><div class="ev-title">${e.title}</div><div class="ev-sub">${e.who==='bhavan'?'Bhavan':'Mom'}</div></div>`;
-        });
-        h+=`</div>`;
-      }
-    });
+    h+=`<div class="day-hdr"><div>${DAYS[d.getDay()]}</div><div class="day-num-w${tod?' today':''}">${d.getDate()}</div></div>`;
   });
   h+=`</div>`;
+
+  // Body: time rows grid + events overlay wrapper
+  h+=`<div style="position:relative">`;
+
+  // Time rows (background grid)
+  h+=`<div class="week-body">`;
+  HOURS.forEach((label,hi)=>{
+    h+=`<div class="week-row">`;
+    h+=`<div class="time-label">${label}</div>`;
+    days.forEach(d=>{
+      h+=`<div class="day-col" onclick="openAddOnDay('${d.toISOString()}',event)" data-hour="${hi+8}"></div>`;
+    });
+    h+=`</div>`;
+  });
+  h+=`</div>`;
+
+  // Events overlay — absolutely positioned over the grid
+  days.forEach((d,di)=>{
+    const dayEvs=wevs.filter(e=>sameDay(new Date(e.start),d));
+    if(!dayEvs.length)return;
+    // column width calc: each day col = (100% - 52px) / 7
+    // use calc for positioning
+    dayEvs.forEach(e=>{
+      const s=new Date(e.start),en=new Date(e.end);
+      const sh=s.getHours()+s.getMinutes()/60;
+      const eh=en.getHours()+en.getMinutes()/60;
+      const top=(sh-8)*ROW_H;
+      const ht=Math.max((eh-sh)*ROW_H,28);
+      const leftPct=`calc(52px + ${di}/7 * (100% - 52px) + 2px)`;
+      const widthPct=`calc((100% - 52px) / 7 - 4px)`;
+      h+=`<div class="event-block ${e.who}" style="position:absolute;top:${top}px;height:${ht}px;left:${leftPct};width:${widthPct};pointer-events:auto" onclick="openEdit('${e.id}',event)">
+        <div class="ev-title">${e.title}</div>
+        <div class="ev-sub">${e.who==='bhavan'?'Bhavan':'Mom'} · ${fmtTime(s)}</div>
+      </div>`;
+    });
+  });
+
+  h+=`</div>`; // end position:relative wrapper
   h+=`<div class="legend"><div class="leg-item"><div class="leg-dot" style="background:var(--accent)"></div>Bhavan</div><div class="leg-item"><div class="leg-dot" style="background:var(--mom)"></div>Mom</div></div>`;
   area.innerHTML=h;
 }
